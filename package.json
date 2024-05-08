@@ -6,7 +6,7 @@
     "seed": "bun prisma/seed.ts"
   },
   "scripts": {
-    "dev" : "bun src/server.ts",
+    "dev" : "bun --hot src/server.ts",
     "start": "NODE_ENV=production bun srs/server.ts" 
   },
   "devDependencies": {

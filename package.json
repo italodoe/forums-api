@@ -1,9 +1,13 @@
 {
   "name": "forums-api",
-  "module": "index.ts",
+  "module": "src/server.ts",
   "type": "module",
   "prisma": {
     "seed": "bun prisma/seed.ts"
+  },
+  "scripts": {
+    "dev" : "bun src/server.ts",
+    "start": "NODE_ENV=production bun srs/server.ts" 
   },
   "devDependencies": {
     "@types/bun": "latest",

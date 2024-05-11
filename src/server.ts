@@ -1,7 +1,6 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import { db } from "./db";
 import forumRoutes from "./forums"
 
 const app = express();
@@ -9,7 +8,7 @@ const app = express();
 // middlewares
 app.use(cors());
 app.use(morgan("dev"));
-app.use(express.json()); //parse req to json
+app.use(express.json()); //parses req to json
 
 
 app.use("/forums", forumRoutes)

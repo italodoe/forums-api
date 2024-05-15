@@ -3,6 +3,7 @@ import { db } from "./db";
 import { Router } from "express";
 import { send } from "./response";
 import { z } from "zod";
+import { catchError } from "./errors";
 
 const router = Router();
 const idParamsSchema = z.object({
@@ -20,62 +21,55 @@ PUT     /forums/:id
 DELETE  /forums/:id
 */
 
-router.get("/", async (request, response, next) => {
-  try {
+router.get(
+  "/",
+  catchError(async (request, response) => {
     const forums = await db.forum.findMany({
-      orderBy: {
-        createdAt: "asc",
-      },
-      select: {
-        name: true,
-        forumId: true,
-      },
+      orderBy: { createdAt: "asc" },
+      select: { name: true, forumId: true },
     });
-
     send(response).ok(forums);
-  } catch (error: any) {
-    next(error);
-  }
-});
+  })
+);
 
-router.post("/", async (request, response, next) => {
-  try {
+router.post(
+  "/",
+  catchError(async (request, response, next) => {
     const data = forumBodySchema.parse(request.body);
     const forum = await db.forum.create({ data });
     send(response).createdOk(forum);
-  } catch (error: any) {
-    next(error);
-  }
-});
+  })
+);
 
-router.get("/:id", async (request, response, next) => {
-  try {
-    console.log(request.params);
-
+router.get(
+  "/:id",
+  catchError(async (request, response, next) => {
     const { id: forumId } = idParamsSchema.parse(request.params);
-    console.log(request.params);
     const forum = await db.forum.findUniqueOrThrow({ where: { forumId } });
     send(response).ok(forum);
-  } catch (error: any) {
-    next(error);
-  }
+  })
+);
 
-});
-
-router.put("/:id", async (request, response, next) => {
-  try {
+router.put(
+  "/:id",
+  catchError(async (request, response, next) => {
     const { id: forumId } = idParamsSchema.parse(request.params);
     const forumsData = forumBodySchema.parse(request.body);
     const updatedForum = await db.forum.update({
       where: { forumId },
       data: forumsData,
     });
-
     send(response).ok(updatedForum);
-  } catch (error: any) {
-    next(error);
-  }
+  })
+);
 
-});
+router.delete(
+  "/:id",
+  catchError(async (request, response, next) => {
+    const { id: forumId } = idParamsSchema.parse(request.params);
+    const deletedForum = await db.forum.delete({ where: { forumId } });
+    send(response).deletedOk(deletedForum);
+  })
+);
 
 export default router;

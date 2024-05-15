@@ -6,7 +6,7 @@ import { z } from "zod";
 
 const router = Router();
 const idParamsSchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
 });
 const forumBodySchema = z.object({
   name: z.string().min(5).max(255),
@@ -20,7 +20,7 @@ PUT     /forums/:id
 DELETE  /forums/:id
 */
 
-router.get("/", async (request, response) => {
+router.get("/", async (request, response, next) => {
   try {
     const forums = await db.forum.findMany({
       orderBy: {
@@ -33,65 +33,49 @@ router.get("/", async (request, response) => {
     });
 
     send(response).ok(forums);
-  } catch (error) {
-    send(response).internalError("Forums not found");
+  } catch (error: any) {
+    next(error);
   }
 });
 
-router.post("/", async (request, response) => {
+router.post("/", async (request, response, next) => {
   try {
-
-    const forumsData = forumBodySchema.parse(request.body);
-
-    const forum = await db.forum.create({
-      data: forumsData,
-    });
+    const data = forumBodySchema.parse(request.body);
+    const forum = await db.forum.create({ data });
     send(response).createdOk(forum);
-  } catch (error) {
-    send(response).internalError("Internal error");
+  } catch (error: any) {
+    next(error);
   }
 });
 
-router.get("/:id", async (request, response) => {
+router.get("/:id", async (request, response, next) => {
   try {
-    const { id: forumId } = idParamsSchema.parse(request.params);
-    const forum = await db.forum.findUniqueOrThrow({
-      where: {
-        forumId,
-      },
-    });
+    console.log(request.params);
 
+    const { id: forumId } = idParamsSchema.parse(request.params);
+    console.log(request.params);
+    const forum = await db.forum.findUniqueOrThrow({ where: { forumId } });
     send(response).ok(forum);
-  } catch (e: any) {
-    if (e.name === "NotFoundError") {
-      send(response).notFound();
-    } else if (e.name === "PrismaClientValidationError") {
-      send(response).notFound();
-    }
+  } catch (error: any) {
+    next(error);
   }
-  send(response).internalError("Internal error");
+
 });
 
-router.put("/:id", async (request, response) => {
+router.put("/:id", async (request, response, next) => {
   try {
     const { id: forumId } = idParamsSchema.parse(request.params);
-
-      const forumsData = forumBodySchema.parse(request.body);
-
+    const forumsData = forumBodySchema.parse(request.body);
     const updatedForum = await db.forum.update({
       where: { forumId },
       data: forumsData,
     });
 
     send(response).ok(updatedForum);
-  } catch (e: any) {
-    if (e.name === "NotFoundError") {
-      send(response).notFound();
-    } else if (e.name === "PrismaClientValidationError") {
-      send(response).notFound();
-    }
+  } catch (error: any) {
+    next(error);
   }
-  send(response).internalError("Internal error");
+
 });
 
 export default router;

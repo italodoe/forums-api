@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import forumRoutes from "./forums"
+import { defaultErrorHandler } from "./errors";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json()); //parses req to json
 
 
 app.use("/forums", forumRoutes)
+app.use(defaultErrorHandler)
 
 // const PORT = process.env.PORT;
 const { PORT } = process.env;
